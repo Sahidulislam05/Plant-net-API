@@ -1,0 +1,5 @@
+node_modules
+
+.env
+
+plant-net-2025-firebase-adminsdk.json
