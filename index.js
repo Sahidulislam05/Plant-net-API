@@ -48,6 +48,7 @@ const client = new MongoClient(process.env.MONGODB_URI, {
     deprecationErrors: true,
   },
 });
+
 async function run() {
   try {
     const db = client.db("plantsDB");
@@ -79,7 +80,7 @@ async function run() {
     };
 
     // Save a plant data in db
-    app.post("/plants", async (req, res) => {
+    app.post("/plants", verifySELLER, async (req, res) => {
       const plantData = req.body;
       const result = await plantsCollection.insertOne(plantData);
       res.send(result);
@@ -187,22 +188,32 @@ async function run() {
     });
 
     // get all orders for a seller by email
-    app.get("/manage-orders/:email", async (req, res) => {
-      const email = req.params.email;
-      const result = await ordersCollection
-        .find({ "seller.email": email })
-        .toArray();
-      res.send(result);
-    });
+    app.get(
+      "/manage-orders/:email",
+      verifyJWT,
+      verifySELLER,
+      async (req, res) => {
+        const email = req.params.email;
+        const result = await ordersCollection
+          .find({ "seller.email": email })
+          .toArray();
+        res.send(result);
+      }
+    );
 
     // get all plant for a seller by email
-    app.get("/my-inventory/:email", async (req, res) => {
-      const email = req.params.email;
-      const result = await plantsCollection
-        .find({ "seller.email": email })
-        .toArray();
-      res.send(result);
-    });
+    app.get(
+      "/my-inventory/:email",
+      verifyJWT,
+      verifySELLER,
+      async (req, res) => {
+        const email = req.params.email;
+        const result = await plantsCollection
+          .find({ "seller.email": email })
+          .toArray();
+        res.send(result);
+      }
+    );
 
     // User
 
@@ -272,8 +283,7 @@ async function run() {
 
       res.send(result);
     });
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
